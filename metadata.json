@@ -1,0 +1,6 @@
+{
+  "name": "ACADMY - Student Skills, Portfolio & Academic Achievement Management System",
+  "description": "Showcase Your Skills. Track Your Achievements. Build Your Future. Centralized university platform for student academic records, verified credentials, projects, and portfolios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
