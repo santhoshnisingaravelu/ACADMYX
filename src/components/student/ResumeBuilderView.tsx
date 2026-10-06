@@ -28,6 +28,15 @@ export const ResumeBuilderView: React.FC = () => {
     'Proactive Computer Science undergraduate with hands-on experience designing scalable microservices, cloud deployments, and verified technical projects.'
   );
 
+  React.useEffect(() => {
+    if (studentProfile) {
+      setCustomSummary(
+        studentProfile.aboutMe || studentProfile.bio ||
+        'Proactive Computer Science undergraduate with hands-on experience designing scalable microservices, cloud deployments, and verified technical projects.'
+      );
+    }
+  }, [studentProfile]);
+
   const [visibleSections, setVisibleSections] = useState({
     summary: true,
     education: true,

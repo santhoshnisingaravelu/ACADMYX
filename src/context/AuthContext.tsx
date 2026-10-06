@@ -168,8 +168,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       return {
         success: false,
-        message: 'Student Not Found',
-        error: 'No student record was found for this register number.'
+        message: err.data?.message || err.message || 'Student Not Found',
+        error: err.data?.error || 'No student record was found for this register number.'
       };
     }
   };

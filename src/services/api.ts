@@ -29,7 +29,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || `Request failed with status ${response.status}`);
+    const error: any = new Error(data.message || `Request failed with status ${response.status}`);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
 
   return data;
@@ -71,7 +74,7 @@ export const api = {
       achievements: AcademicAchievement[];
       documents: StudentDocument[];
       portfolioConfig: PortfolioConfig;
-    }>(`/students/${userId}`),
+    }>(`/students/${encodeURIComponent(userId.trim())}`),
 
   getStudentByRegisterNo: (rollNo: string) =>
     request<{
@@ -85,7 +88,7 @@ export const api = {
       achievements: AcademicAchievement[];
       documents: StudentDocument[];
       portfolioConfig: PortfolioConfig;
-    }>(`/students/register/${encodeURIComponent(rollNo.trim())}`),
+    }>(`/students/${encodeURIComponent(rollNo.trim().toUpperCase())}`),
 
   getPublicPortfolio: (slug: string) =>
     request<{

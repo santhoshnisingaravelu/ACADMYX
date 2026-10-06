@@ -138,127 +138,105 @@ router.get('/students', (req: Request, res: Response) => {
   res.json({ success: true, students: enriched });
 });
 
-// Query student full details by Register Number
-router.get('/students/register/:rollNo', (req: Request, res: Response) => {
-  const { rollNo } = req.params;
-  if (!rollNo || !rollNo.trim()) {
+// Helper for full student lookup by register number or user ID
+function handleStudentLookup(rawIdentifier: string, res: Response) {
+  if (!rawIdentifier || !rawIdentifier.trim()) {
     return res.status(400).json({
       success: false,
-      message: 'Please enter a register number.'
+      message: 'Please enter a register number.',
+      error: 'Invalid register number.'
     });
   }
 
-  const cleanRoll = rollNo.trim().toUpperCase();
-  const profile = db.getProfileByRollNo(cleanRoll);
-  const user = db.getUserByCollegeId(cleanRoll);
+  const trimmed = rawIdentifier.trim();
+  const cleanRoll = trimmed.toUpperCase();
+  const cleanLower = trimmed.toLowerCase();
 
-  if (!profile && !user) {
-    return res.status(404).json({
+  try {
+    // 1. Try finding by Roll / Register Number
+    let profile = db.getProfileByRollNo(cleanRoll);
+    let user = db.getUserByCollegeId(cleanRoll);
+
+    // 2. Try finding by User ID
+    if (!profile) {
+      profile = db.getProfileByUserId(trimmed) || db.getProfileByUserId(cleanLower) || db.getProfileByUserId(cleanRoll);
+    }
+    if (!user) {
+      user = db.getUserById(trimmed) || db.getUserById(cleanLower) || db.getUserById(cleanRoll);
+    }
+
+    // 3. Fallback check for user_21csXXX format
+    if (!profile && cleanRoll.startsWith('21CS')) {
+      const userPrefix = `user_${cleanLower}`;
+      profile = db.getProfileByUserId(userPrefix);
+      if (!user) {
+        user = db.getUserById(userPrefix);
+      }
+    }
+
+    if (!profile && !user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student Not Found',
+        error: 'No student record was found for this register number.'
+      });
+    }
+
+    const userId = profile ? profile.userId : user!.id;
+    const actualUser = user || db.getUserById(userId);
+    const skills = db.getSkills(userId);
+    const projects = db.getProjects(userId);
+    const internships = db.getInternships(userId);
+    const certifications = db.getCertifications(userId);
+    const achievements = db.getAchievements(userId);
+    const documents = db.getDocuments(userId);
+    const portfolioConfig = db.getPortfolioConfig(userId);
+
+    return res.status(200).json({
+      success: true,
+      user: actualUser,
+      student: profile || {
+        id: 'prof_' + userId,
+        userId,
+        name: actualUser?.name,
+        email: actualUser?.email,
+        rollNo: actualUser?.collegeId || cleanRoll,
+        department: actualUser?.department || 'Computer Science & Engineering',
+        degree: 'B.Tech in Computer Science & Engineering',
+        currentSemester: 8,
+        batch: '2021-2025',
+        cgpa: 8.5,
+        phone: actualUser?.phone || '',
+        bio: '',
+        avatar: actualUser?.avatar,
+        portfolioSlug: actualUser?.name.toLowerCase().replace(/\s+/g, '-')
+      },
+      skills,
+      projects,
+      internships,
+      certifications,
+      achievements,
+      documents,
+      portfolioConfig
+    });
+  } catch (err: any) {
+    console.error('Error fetching student record:', err);
+    return res.status(500).json({
       success: false,
-      message: 'Student Not Found',
-      error: 'No student record was found for this register number.'
+      message: 'Unexpected server error while fetching student record.',
+      error: err?.message || 'Server error'
     });
   }
+}
 
-  const userId = profile ? profile.userId : user!.id;
-  const actualUser = user || db.getUserById(userId);
-  const skills = db.getSkills(userId);
-  const projects = db.getProjects(userId);
-  const internships = db.getInternships(userId);
-  const certifications = db.getCertifications(userId);
-  const achievements = db.getAchievements(userId);
-  const documents = db.getDocuments(userId);
-  const portfolioConfig = db.getPortfolioConfig(userId);
-
-  return res.json({
-    success: true,
-    user: actualUser,
-    student: profile || {
-      id: 'prof_' + userId,
-      userId,
-      name: actualUser?.name,
-      email: actualUser?.email,
-      rollNo: actualUser?.collegeId,
-      department: actualUser?.department,
-      degree: 'B.Tech in Computer Science & Engineering',
-      currentSemester: 8,
-      batch: '2021-2025',
-      cgpa: 8.5,
-      phone: '',
-      bio: '',
-      avatar: actualUser?.avatar,
-      portfolioSlug: actualUser?.name.toLowerCase().replace(/\s+/g, '-')
-    },
-    skills,
-    projects,
-    internships,
-    certifications,
-    achievements,
-    documents,
-    portfolioConfig
-  });
+// Query student full details by Register Number
+router.get('/students/register/:rollNo', (req: Request, res: Response) => {
+  return handleStudentLookup(req.params.rollNo, res);
 });
 
+// Query student full details by User ID or Register Number
 router.get('/students/:userId', (req: Request, res: Response) => {
-  const { userId } = req.params;
-  let profile = db.getProfileByUserId(userId);
-  let user = db.getUserById(userId);
-
-  // If not found by user ID, attempt lookup by roll number
-  if (!profile && !user) {
-    const rollProfile = db.getProfileByRollNo(userId);
-    const rollUser = db.getUserByCollegeId(userId);
-    if (rollProfile || rollUser) {
-      profile = rollProfile;
-      user = rollUser;
-    }
-  }
-
-  if (!profile && !user) {
-    return res.status(404).json({
-      success: false,
-      message: 'Student Not Found',
-      error: 'No student record was found for this register number.'
-    });
-  }
-
-  const targetUserId = profile ? profile.userId : user!.id;
-  const actualUser = user || db.getUserById(targetUserId);
-  const skills = db.getSkills(targetUserId);
-  const projects = db.getProjects(targetUserId);
-  const internships = db.getInternships(targetUserId);
-  const certifications = db.getCertifications(targetUserId);
-  const achievements = db.getAchievements(targetUserId);
-  const documents = db.getDocuments(targetUserId);
-  const portfolioConfig = db.getPortfolioConfig(targetUserId);
-
-  res.json({
-    success: true,
-    user: actualUser,
-    student: profile || {
-      id: 'prof_' + targetUserId,
-      userId: targetUserId,
-      name: actualUser?.name,
-      email: actualUser?.email,
-      rollNo: actualUser?.collegeId,
-      department: actualUser?.department,
-      degree: 'B.Tech',
-      currentSemester: 8,
-      batch: '2021-2025',
-      cgpa: 8.5,
-      phone: '',
-      bio: '',
-      avatar: actualUser?.avatar,
-      portfolioSlug: actualUser?.name.toLowerCase().replace(/\s+/g, '-')
-    },
-    skills,
-    projects,
-    internships,
-    certifications,
-    achievements,
-    documents,
-    portfolioConfig
-  });
+  return handleStudentLookup(req.params.userId, res);
 });
 
 router.put('/students/:userId/profile', (req: Request, res: Response) => {

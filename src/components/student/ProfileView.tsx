@@ -40,6 +40,30 @@ export const ProfileView: React.FC = () => {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (studentProfile) {
+      setFormData({
+        name: studentProfile.name || '',
+        email: studentProfile.email || '',
+        rollNo: studentProfile.rollNo || '',
+        department: studentProfile.department || 'Computer Science & Engineering',
+        degree: studentProfile.degree || 'B.Tech in Computer Science',
+        currentSemester: studentProfile.currentSemester || 8,
+        batch: studentProfile.batch || '2021-2025',
+        cgpa: studentProfile.cgpa || 9.0,
+        phone: studentProfile.phone || '',
+        location: studentProfile.location || 'Bangalore, India',
+        targetRole: studentProfile.targetRole || 'Full Stack & Cloud Solutions Engineer',
+        bio: studentProfile.bio || '',
+        aboutMe: studentProfile.aboutMe || '',
+        githubUrl: studentProfile.githubUrl || '',
+        linkedinUrl: studentProfile.linkedinUrl || '',
+        websiteUrl: studentProfile.websiteUrl || '',
+        portfolioSlug: studentProfile.portfolioSlug || ''
+      });
+    }
+  }, [studentProfile]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({

@@ -31,6 +31,12 @@ export const PortfolioGeneratorView: React.FC = () => {
 
   const [config, setConfig] = useState(portfolioConfig);
 
+  React.useEffect(() => {
+    if (portfolioConfig) {
+      setConfig(portfolioConfig);
+    }
+  }, [portfolioConfig]);
+
   const publicUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/#portfolio/${studentProfile?.portfolioSlug || 'student'}`
     : `https://academix.edu/portfolio/${studentProfile?.portfolioSlug || 'student'}`;

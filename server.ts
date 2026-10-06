@@ -5,7 +5,10 @@ import apiRouter from './server/api.ts';
 
 async function startServer() {
   const app = express();
-  const PORT = parseInt(process.env.PORT || '3000', 10);
+  const portArg = process.argv.find((arg) => arg.startsWith('--port='));
+  const PORT = portArg
+    ? parseInt(portArg.split('=')[1], 10)
+    : parseInt(process.env.APP_PORT || process.env.DEFAULT_APP_PORT || '3000', 10);
 
   // Parse JSON payloads up to 25MB for certificate scans and documents
   app.use(express.json({ limit: '25mb' }));

@@ -27,19 +27,19 @@ export interface StudentProfile {
   name: string;
   email: string;
   rollNo: string; // e.g. 21CS042
-  registerNumber: string; // normalized e.g. 21CS042
+  registerNumber?: string; // normalized e.g. 21CS042
   department: string;
-  course: string; // e.g. "B.Tech Computer Science"
+  course?: string; // e.g. "B.Tech Computer Science"
   degree: string;
   specialization?: string;
-  year: string; // e.g. "Final Year" or "4th Year"
+  year?: string; // e.g. "Final Year" or "4th Year"
   currentSemester: number;
   batch: string; // e.g. "2021-2025"
-  graduationYear: string; // "2025"
+  graduationYear?: string; // "2025"
   cgpa: number;
-  attendance: number; // e.g. 92%
-  creditsCompleted: number; // e.g. 148
-  creditsTotal: number; // e.g. 160
+  attendance?: number; // e.g. 92%
+  creditsCompleted?: number; // e.g. 148
+  creditsTotal?: number; // e.g. 160
   phone: string;
   bio: string;
   careerObjective?: string;
@@ -51,7 +51,7 @@ export interface StudentProfile {
   portfolioSlug: string;
   targetRole?: string;
   aboutMe?: string;
-  status: 'Active' | 'Alumni' | 'Probation';
+  status?: 'Active' | 'Alumni' | 'Probation';
   portfolioScore?: number; // 0-100
   careerReadinessScore?: number; // 0-100
   educationHistory?: EducationEntry[];
